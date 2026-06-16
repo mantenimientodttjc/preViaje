@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTT ALTRACO - Check de Previaje Pilotos</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #0b6623;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px 40px 15px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #7cb342;
+        }
+        .info-group {
+            margin-bottom: 12px;
+        }
+        .info-group:last-child {
+            margin-bottom: 0;
+        }
+        .info-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .info-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+        .task-card.completed {
+            border-left: 6px solid #0b6623;
+            background-color: #f0f7f1;
+        }
+        .task-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .task-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-number {
+            background: #e0e0e0;
+            color: #555;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .task-card.completed .task-number {
+            background: #0b6623;
+            color: white;
+        }
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            background: #ffebee;
+            color: #c62828;
+        }
+        .task-card.completed .status-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .camera-btn-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+        .camera-btn {
+            background-color: #0b6623;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .camera-btn:active {
+            background-color: #084c1a;
+        }
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .preview-container {
+            margin-top: 12px;
+            display: none;
+            text-align: center;
+            position: relative;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+            border: 2px solid #0b6623;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .summary-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 25px;
+            border-top: 4px solid #0b6623;
+        }
+        .progress-bar-container {
+            background: #eee;
+            border-radius: 10px;
+            height: 15px;
+            width: 100%;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #7cb342, #0b6623);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .submit-btn {
+            background-color: #ccc;
+            color: #666;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: not-allowed;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .submit-btn.ready {
+            background-color: #0b6623;
+            color: white;
+            cursor: pointer;
+        }
+        .submit-btn.ready:hover {
+            background-color: #084c1a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>DTT ALTRACO</h1>
+        <p>📋 CONTROL DE PREVIAJE Y VALIDACIÓN</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- Información del Piloto y Unidad -->
+        <div class="info-card">
+            <div class="info-group">
+                <label for="codigo-cabezal">Código del Cabezal:</label>
+                <input type="text" id="codigo-cabezal" placeholder="Ej: C-101" value="C-101">
+            </div>
+            <div class="info-group" style="margin-top: 10px;">
+                <label for="nombre-piloto">Nombre del Piloto / Mecánico:</label>
+                <input type="text" id="nombre-piloto" placeholder="Ingrese nombre completo">
+            </div>
+        </div>
+
+        <form id="checklist-form">
+            
+            <!-- Item 1 -->
+            <div class="task-card" id="card-1">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">1</span> Revisión Aceite de Motor</div>
+                    <span class="status-badge" id="status-1">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(1, this)">
+                </div>
+                <div class="preview-container" id="preview-box-1">
+                    <img class="preview-image" id="img-1" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="task-card" id="card-2">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">2</span> Revisión Aceite de Transmisión</div>
+                    <span class="status-badge" id="status-2">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(2, this)">
+                </div>
+                <div class="preview-container" id="preview-box-2">
+                    <img class="preview-image" id="img-2" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="task-card" id="card-3">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">3</span> Revisión Aceite de Diferencial</div>
+                    <span class="status-badge" id="status-3">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(3, this)">
+                </div>
+                <div class="preview-container" id="preview-box-3">
+                    <img class="preview-image" id="img-3" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="task-card" id="card-4">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">4</span> Revisión Nivel Hidráulico</div>
+                    <span class="status-badge" id="status-4">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(4, this)">
+                </div>
+                <div class="preview-container" id="preview-box-4">
+                    <img class="preview-image" id="img-4" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="task-card" id="card-5">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">5</span> Revisión Agua / Refrigerante</div>
+                    <span class="status-badge" id="status-5">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(5, this)">
+                </div>
+                <div class="preview-container" id="preview-box-5">
+                    <img class="preview-image" id="img-5" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="task-card" id="card-6">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">6</span> Revisión de Fricciones</div>
+                    <span class="status-badge" id="status-6">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(6, this)">
+                </div>
+                <div class="preview-container" id="preview-box-6">
+                    <img class="preview-image" id="img-6" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 7 -->
+            <div class="task-card" id="card-7">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">7</span> Ajuste y Graduación de Frenos</div>
+                    <span class="status-badge" id="status-7">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(7, this)">
+                </div>
+                <div class="preview-container" id="preview-box-7">
+                    <img class="preview-image" id="img-7" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 8 -->
+            <div class="task-card" id="card-8">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">8</span> Presión de Compresor (Rango 120 PSI)</div>
+                    <span class="status-badge" id="status-8">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(8, this)">
+                </div>
+                <div class="preview-container" id="preview-box-8">
+                    <img class="preview-image" id="img-8" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 9 -->
+            <div class="task-card" id="card-9">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">9</span> Revisión Presión de Aceite</div>
+                    <span class="status-badge" id="status-9">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(9, this)">
+                </div>
+                <div class="preview-container" id="preview-box-9">
+                    <img class="preview-image" id="img-9" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 10 -->
+            <div class="task-card" id="card-10">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">10</span> Revisión de Fajas</div>
+                    <span class="status-badge" id="status-10">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(10, this)">
+                </div>
+                <div class="preview-container" id="preview-box-10">
+                    <img class="preview-image" id="img-10" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 11 -->
+            <div class="task-card" id="card-11">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">11</span> Funcionamiento Limpiaparabrisas</div>
+                    <span class="status-badge" id="status-11">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(11, this)">
+                </div>
+                <div class="preview-container" id="preview-box-11">
+                    <img class="preview-image" id="img-11" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 12 -->
+            <div class="task-card" id="card-12">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">12</span> Activación Freno de Motor</div>
+                    <span class="status-badge" id="status-12">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(12, this)">
+                </div>
+                <div class="preview-container" id="preview-box-12">
+                    <img class="preview-image" id="img-12" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 13 -->
+            <div class="task-card" id="card-13">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">13</span> Graduación y Ajuste de Embrague</div>
+                    <span class="status-badge" id="status-13">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(13, this)">
+                </div>
+                <div class="preview-container" id="preview-box-13">
+                    <img class="preview-image" id="img-13" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Item 14 -->
+            <div class="task-card" id="card-14">
+                <div class="task-header">
+                    <div class="task-title"><span class="task-number">14</span> Palanca de Velocidades y Selector</div>
+                    <span class="status-badge" id="status-14">Pendiente</span>
+                </div>
+                <div class="camera-btn-wrapper">
+                    <button type="button" class="camera-btn">📸 Tomar Foto Evidencia</button>
+                    <input type="file" class="file-input" accept="image/*" capture="environment" onchange="verifyStep(14, this)">
+                </div>
+                <div class="preview-container" id="preview-box-14">
+                    <img class="preview-image" id="img-14" src="" alt="Vista previa">
+                </div>
+            </div>
+
+            <!-- Resumen y Envío -->
+            <div class="summary-card">
+                <h3>Progreso del Previaje</h3>
+                <div id="progress-text">0 de 14 tareas completadas (0%)</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <button type="button" id="submit-btn" class="submit-btn" onclick="sendToSupervisor()">
+                    🚀 Enviar Previaje para Pago
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        const totalTasks = 14;
+        let completedTasks = new Set();
+
+        function verifyStep(stepId, input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Mostrar vista previa de la foto
+                    const previewBox = document.getElementById(`preview-box-${stepId}`);
+                    const imgElement = document.getElementById(`img-${stepId}`);
+                    imgElement.src = e.target.result;
+                    previewBox.style.display = 'block';
+                    
+                    // Actualizar estado de la tarjeta
+                    const card = document.getElementById(`card-${stepId}`);
+                    const status = document.getElementById(`status-${stepId}`);
+                    
+                    card.classList.add('completed');
+                    status.textContent = 'Completado';
+                    
+                    // Guardar progreso
+                    completedTasks.add(stepId);
+                    updateProgress();
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateProgress() {
+            const count = completedTasks.size;
+            const percentage = Math.round((count / totalTasks) * 100);
+            
+            document.getElementById('progress-text').textContent = `${count} de ${totalTasks} tareas completadas (${percentage}%)`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            
+            const submitBtn = document.getElementById('submit-btn');
+            if (count === totalTasks) {
+                submitBtn.classList.add('ready');
+                submitBtn.removeAttribute('disabled');
+                submitBtn.style.cursor = 'pointer';
+            } else {
+                submitBtn.classList.remove('ready');
+                submitBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        function sendToSupervisor() {
+            const piloto = document.getElementById('nombre-piloto').value.trim();
+            const cabezal = document.getElementById('codigo-cabezal').value.trim();
+            
+            if (!piloto) {
+                alert('Por favor, ingresa tu nombre antes de enviar.');
+                return;
+            }
+            
+            if (completedTasks.size < totalTasks) {
+                alert('Debes tomar foto de las 14 revisiones para poder enviar el previo.');
+                return;
+            }
+            
+            // Simulación o redirección de envío por WhatsApp o Servidor
+            const mensaje = `¡Previaje Listo para Pago!\nCabezal: ${cabezal}\nPiloto: ${piloto}\nEstado: 14/14 Evidencias capturadas con éxito.`;
+            alert('✅ ¡Checklist completado con éxito! Se ha generado la orden de validación para el pago de la unidad ' + cabezal);
+            
+            // Aquí se conectaría con la base de datos o el bot de WhatsApp.
+        }
+    </script>
+</body>
+</html>
